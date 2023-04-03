@@ -1,0 +1,3 @@
+TOKEN = '6121424128:AAHKJ8raNfV_xExztytav8jL_9MYnSf1svQ'
+DB_FILENAME = 'db.sqlite3'
+MY_ID = '523271455'
