@@ -1,5 +1,4 @@
 import os
-import asyncio
 import logging
 from aiogram import Bot
 from sqlalchemy import create_engine
