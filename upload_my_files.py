@@ -21,9 +21,9 @@ Session = scoped_session(session_factory)
 bot = Bot(token=TOKEN)
 
 
-def uploadMediaFiles(file_id, file_name, file_type):
+def uploadMediaFiles(file_id, file_name, file_type, id_user):
             session = Session()
-            newItem = MediaIds(file_id=file_id, file_name=file_name, file_type=file_type)
+            newItem = MediaIds(file_id=file_id, file_name=file_name, file_type=file_type, id_user=id_user)
             try:
                 session.add(newItem)
                 session.commit()

@@ -21,7 +21,7 @@ async def process_start_command(message: types.Message):
 @dp.message_handler(commands=['help'])
 async def process_help_command(message: types.Message):
     msg = text(bold('Я могу ответить на следующие команды:'),
-               '/voice', '/photo', '/group', '/note', '/file,', '/video', sep='\n')
+               '/voice', '/photo', '/note', '/file,', '/video', sep='\n')
     await message.reply(msg, parse_mode=ParseMode.MARKDOWN)
 
 @dp.message_handler(content_types=ContentType.PHOTO)
@@ -33,7 +33,8 @@ async def process_PHOTO(message: types.Message):
 
     id_file = message.photo[-1].file_id
     file_type = 'photo'
-    upload_my_files.uploadMediaFiles(id_file, name_file, file_type)
+    id_user = message.from_user.id
+    upload_my_files.uploadMediaFiles(id_file, name_file, file_type, id_user)
 
 @dp.message_handler(content_types=ContentType.DOCUMENT)
 async def process_DOCUMENT(message: types.Message):
@@ -44,14 +45,16 @@ async def process_DOCUMENT(message: types.Message):
 
     id_file = message.document.file_id
     file_type = 'file'
-    upload_my_files.uploadMediaFiles(id_file, name_file, file_type)
+    id_user = message.from_user.id
+    upload_my_files.uploadMediaFiles(id_file, name_file, file_type, id_user)
 
 @dp.message_handler(content_types=ContentType.VOICE)
 async def process_VOICE(message: types.Message):
     name_file =  message.voice.file_unique_id
     id_file = message.voice.file_id
     file_type = 'voice'
-    upload_my_files.uploadMediaFiles(id_file, name_file, file_type)
+    id_user = message.from_user.id
+    upload_my_files.uploadMediaFiles(id_file, name_file, file_type, id_user)
 
 @dp.message_handler(content_types=ContentType.VIDEO)
 async def process_VIDEO(message: types.Message):
@@ -62,28 +65,29 @@ async def process_VIDEO(message: types.Message):
 
     id_file = message.video.file_id
     file_type = 'video'
-    upload_my_files.uploadMediaFiles(id_file, name_file, file_type)
+    id_user = message.from_user.id
+    upload_my_files.uploadMediaFiles(id_file, name_file, file_type, id_user)
 
 @dp.message_handler(content_types=ContentType.VIDEO_NOTE)
 async def process_VIDEO_NOTE(message: types.Message):
     name_file =  message.video_note.file_unique_id
     id_file = message.video_note.file_id
     file_type = 'video_note'
-    upload_my_files.uploadMediaFiles(id_file, name_file, file_type)
+    id_user = message.from_user.id
+    upload_my_files.uploadMediaFiles(id_file, name_file, file_type, id_user)
 
 @dp.message_handler(commands=['photo'])
 async def process_photo_command(message: types.Message):
     conn = sqlite3.connect('db.sqlite3')
     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM MediaIds")
+    cur.execute(f"SELECT file_id FROM MediaIds where id_user = '{message.from_user.id}' AND file_type = 'photo'")
     MediaIds = cur.fetchall()
 
     media = []
 
     for photo_id in MediaIds:
-        if photo_id[3] == 'photo':
-            media.append(InputMediaPhoto(photo_id[1]))
+        media.append(InputMediaPhoto(photo_id[0]))
     
     await bot.send_media_group(message.from_user.id, media)
 
@@ -96,12 +100,11 @@ async def process_photo_command(message: types.Message):
     conn = sqlite3.connect('db.sqlite3')
     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM MediaIds")
+    cur.execute(f"SELECT file_id FROM MediaIds where id_user = '{message.from_user.id}' AND file_type = 'voice'")
     MediaIds = cur.fetchall()
 
     for voice_id in MediaIds:
-        if voice_id[3] == 'voice':
-            await bot.send_voice(message.from_user.id, voice_id[1])
+        await bot.send_voice(message.from_user.id, voice_id[0])
 
     cur.close()
     conn.close()
@@ -111,12 +114,11 @@ async def process_photo_command(message: types.Message):
     conn = sqlite3.connect('db.sqlite3')
     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM MediaIds")
+    cur.execute(f"SELECT file_id FROM MediaIds where id_user = '{message.from_user.id}' AND file_type = 'video_note'")
     MediaIds = cur.fetchall()
 
     for video_note_id in MediaIds:
-        if video_note_id[3] == 'video_note':
-            await bot.send_voice(message.from_user.id, video_note_id[1])
+        await bot.send_voice(message.from_user.id, video_note_id[0])
 
     cur.close()
     conn.close()
@@ -126,27 +128,25 @@ async def process_photo_command(message: types.Message):
     conn = sqlite3.connect('db.sqlite3')
     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM MediaIds")
+    cur.execute(f"SELECT file_id FROM MediaIds where id_user = '{message.from_user.id}' AND file_type = 'file'")
     MediaIds = cur.fetchall()
 
     for file_id in MediaIds:
-        if file_id[3] == 'file':
-            await bot.send_voice(message.from_user.id, file_id[1])
+        await bot.send_voice(message.from_user.id, file_id[0])
 
     cur.close()
     conn.close()
 
-@dp.message_handler(commands=['group'])
+@dp.message_handler(commands=['video'])
 async def process_photo_command(message: types.Message):
     conn = sqlite3.connect('db.sqlite3')
     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM MediaIds")
+    cur.execute(f"SELECT file_id FROM MediaIds where id_user = '{message.from_user.id}' AND file_type = 'video'")
     MediaIds = cur.fetchall()
 
-    for group_id in MediaIds:
-        if group_id[3] == 'file':
-            await bot.send_voice(message.from_user.id, group_id[1])
+    for video_id in MediaIds:
+        await bot.send_voice(message.from_user.id, video_id[0])
 
     cur.close()
     conn.close()
